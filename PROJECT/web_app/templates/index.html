@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plant Disease Detection Using CNN and Transfer Learning</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#detect">Skip to image upload</a>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="#home" aria-label="Plant Disease Detection home">
+        <span class="brand-mark" aria-hidden="true">🌿</span>
+        <span class="brand-text">LeafGuard CNN</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        Menu
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <a href="#home">Home</a>
+        <a href="#detect">Detect</a>
+        <a href="#about">About</a>
+        <a href="#how">How It Works</a>
+        <a href="#model">Model</a>
+        <a href="#classes">Classes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">College ML Project · PlantVillage · 38 Classes</p>
+          <h1>Plant Disease Detection Using CNN and Transfer Learning</h1>
+          <p class="lede">
+            Upload a plant leaf photo and a trained MobileNetV2 model classifies it
+            into one of 38 PlantVillage disease or healthy-leaf categories.
+            Predictions come from the real TensorFlow/Keras model through a Flask API —
+            they are not simulated.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#detect">Upload a leaf image</a>
+            <a class="btn btn-ghost" href="#about">About the project</a>
+          </div>
+          <ul class="hero-stats" aria-label="Reported model performance">
+            <li><strong>92.29%</strong><span>Reported test accuracy</span></li>
+            <li><strong>0.2192</strong><span>Reported test loss</span></li>
+            <li><strong>38</strong><span>PlantVillage classes</span></li>
+          </ul>
+        </div>
+        <aside class="hero-panel" aria-hidden="true">
+          <div class="leaf-card">
+            <p>MobileNetV2 transfer learning</p>
+            <p>Input size 224 × 224 RGB</p>
+            <p>Softmax over 38 classes</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="detect" class="detect">
+      <div class="container">
+        <h2>Detect plant disease</h2>
+        <p class="section-intro">
+          Choose a clear, close-up photo of a single leaf. Supported formats are JPG, JPEG, and PNG.
+        </p>
+
+        <div class="detect-layout">
+          <form id="predict-form" class="upload-card" novalidate>
+            <div
+              id="drop-zone"
+              class="drop-zone"
+              tabindex="0"
+              role="button"
+              aria-label="Upload a leaf image. Drag and drop or press Enter to choose a file."
+            >
+              <input
+                id="leaf-image"
+                name="image"
+                type="file"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                hidden
+              >
+              <div id="drop-prompt" class="drop-prompt">
+                <p class="drop-title">Drag and drop a leaf image here</p>
+                <p>or</p>
+                <label class="btn btn-secondary" for="leaf-image">Choose image</label>
+                <p class="hint">JPG, JPEG, or PNG · up to 8 MB</p>
+              </div>
+              <div id="preview-wrap" class="preview-wrap hidden">
+                <img id="preview-image" alt="Preview of the uploaded leaf">
+                <div class="preview-actions">
+                  <button type="button" id="change-image" class="btn btn-ghost">Change image</button>
+                  <button type="button" id="remove-image" class="btn btn-ghost">Remove image</button>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" id="predict-btn" class="btn btn-primary btn-block" disabled>
+              Predict Disease
+            </button>
+            <p id="form-hint" class="hint">Select a leaf image to enable prediction.</p>
+          </form>
+
+          <div class="result-column">
+            <div id="loading" class="loading-card hidden" role="status" aria-live="polite">
+              <div class="spinner" aria-hidden="true"></div>
+              <p>Running the trained MobileNetV2 model…</p>
+            </div>
+
+            <div id="error-card" class="error-card hidden" role="alert"></div>
+
+            <article id="result-card" class="result-card hidden" aria-live="polite">
+              <p class="result-kicker">Model prediction</p>
+              <h3 id="result-title"></h3>
+              <p id="result-status" class="status-pill"></p>
+              <p class="confidence-label">Confidence</p>
+              <p id="result-confidence" class="confidence-value"></p>
+              <p id="result-note" class="confidence-note"></p>
+              <ul id="top-list" class="top-list"></ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="info">
+      <div class="container">
+        <h2>About this project</h2>
+        <p>
+          This web application is the demonstration layer for a machine learning project
+          that detects plant leaf diseases with a convolutional neural network.
+          The classifier was trained in Google Colab on a PlantVillage color-image subset
+          (38 classes, 17,910 images) using transfer learning from ImageNet-pretrained
+          MobileNetV2. The website sends your uploaded image to a Flask backend, which
+          loads that same trained <code>.keras</code> file and returns the predicted class.
+        </p>
+      </div>
+    </section>
+
+    <section id="how" class="info alt">
+      <div class="container">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li>You upload a JPG, JPEG, or PNG leaf photo.</li>
+          <li>The backend converts it to RGB and resizes it to 224 × 224 with bilinear interpolation — the same size used during training.</li>
+          <li>Pixel values stay in the 0–255 range. MobileNetV2 scaling is already inside the saved model, so it is not applied a second time.</li>
+          <li>The model outputs 38 softmax scores. The class with the highest score is shown, along with that score as a confidence percentage.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="model" class="info">
+      <div class="container">
+        <h2>Model information</h2>
+        <dl class="spec-list">
+          <dt>Architecture</dt>
+          <dd>MobileNetV2 (ImageNet weights, frozen base) + global average pooling + dropout (0.3) + dense softmax head</dd>
+          <dt>Framework</dt>
+          <dd>TensorFlow / Keras</dd>
+          <dt>Input</dt>
+          <dd>224 × 224 × 3 RGB</dd>
+          <dt>Loss</dt>
+          <dd>Sparse categorical crossentropy</dd>
+          <dt>Reported test results</dt>
+          <dd>Accuracy 92.29% · Loss 0.2192 (held-out PlantVillage subset split from the notebook)</dd>
+          <dt>Model file</dt>
+          <dd><code>web_app/models/plant_disease_mobilenetv2.keras</code></dd>
+        </dl>
+      </div>
+    </section>
+
+    <section id="classes" class="info alt">
+      <div class="container">
+        <h2>Supported classes</h2>
+        <p class="section-intro">
+          Labels follow the original PlantVillage folder names in the same order used by
+          <code>image_dataset_from_directory</code> during training. They are not reordered.
+        </p>
+        {% if labels_available %}
+        <ol class="class-grid">
+          {% for name in class_names %}
+          <li>{{ name }}</li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="error-inline">Class label file is missing. Place <code>class_names.txt</code> in <code>web_app/models/</code>.</p>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p><strong>Plant Disease Detection Using CNN and Transfer Learning</strong></p>
+      <p>Technologies: Python, TensorFlow/Keras, MobileNetV2, Flask, HTML, CSS, JavaScript, PlantVillage dataset.</p>
+      <p>This demo is for academic illustration. Confidence scores are model probabilities, not a field diagnosis.</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
